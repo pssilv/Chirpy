@@ -2,12 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
-  "fmt"
-  "strings"
 
 	"github.com/google/uuid"
+	"github.com/pssilv/Chirpy/internal/auth"
 	"github.com/pssilv/Chirpy/internal/database"
 )
 
@@ -15,7 +16,17 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 
   type paramaters struct {
     Body string `json:"body"`
-    UserID uuid.UUID `json:"user_id"`
+  }
+
+  authorization, err := auth.GetBearerToken(r.Header)
+
+  if err != nil {
+    respondWithError(w, 401, "Invalid header", err)
+  }
+
+  userID, err := auth.ValidateJWT(authorization, cfg.jwtSecret)
+  if err != nil {
+    respondWithError(w, 401, "Couldn't validate", err)
   }
 
   type response struct{
@@ -37,7 +48,7 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 
   chirpParams := database.CreateChirpParams{
     Body: cleaned,
-    UserID: params.UserID,
+    UserID: userID,
   }
 
   chirp, err := cfg.db.CreateChirp(r.Context(), chirpParams)
