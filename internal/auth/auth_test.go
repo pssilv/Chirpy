@@ -107,7 +107,7 @@ func TestGetBearerToken(t *testing.T) {
         return
       }
       if gotToken != tt.wantToken {
-        t.Errorf("GetBearerToken() gotToken = %v, want %v", err, tt.wantToken)
+        t.Errorf("GetBearerToken() gotToken = %v, want %v", gotToken, tt.wantToken)
       }
     })  
   }
